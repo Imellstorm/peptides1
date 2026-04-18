@@ -241,8 +241,6 @@ function landing_handle_export() {
     if ( ! current_user_can( 'manage_options' ) ) {
         return;
     }
-    check_admin_referer( 'landing_export' );
-
     $keys = landing_get_option_keys();
     $data = array();
 
@@ -266,11 +264,6 @@ function landing_handle_export() {
 }
 
 function landing_handle_import() {
-    if ( ! current_user_can( 'manage_options' ) ) {
-        return array( 'error', 'Permission denied.' );
-    }
-    check_admin_referer( 'landing_import' );
-
     if ( empty( $_FILES['landing_import_file']['tmp_name'] ) ) {
         return array( 'error', 'No file uploaded.' );
     }
@@ -349,18 +342,18 @@ function landing_handle_import() {
 }
 
 function landing_export_import_page() {
-    // Handle export
-    if ( isset( $_POST['landing_action'] ) && $_POST['landing_action'] === 'export' ) {
-        landing_handle_export();
-    }
-
-    // Handle import
     $notice      = '';
     $notice_type = 'success';
-    if ( isset( $_POST['landing_action'] ) && $_POST['landing_action'] === 'import' ) {
-        $result      = landing_handle_import();
-        $notice_type = $result[0] === 'error' ? 'error' : 'success';
-        $notice      = $result[1];
+
+    if ( isset( $_POST['landing_action'] ) ) {
+        if ( $_POST['landing_action'] === 'export' && wp_verify_nonce( $_POST['_wpnonce_export'], 'landing_export' ) ) {
+            landing_handle_export();
+        }
+        if ( $_POST['landing_action'] === 'import' && wp_verify_nonce( $_POST['_wpnonce_import'], 'landing_import' ) ) {
+            $result      = landing_handle_import();
+            $notice_type = $result[0] === 'error' ? 'error' : 'success';
+            $notice      = $result[1];
+        }
     }
     ?>
     <div class="wrap">
@@ -377,7 +370,7 @@ function landing_export_import_page() {
                 <h2><?php esc_html_e( 'Export Settings', 'landing' ); ?></h2>
                 <p><?php esc_html_e( 'Download all Landing Page settings as a JSON file. Images are exported as URLs.', 'landing' ); ?></p>
                 <form method="post">
-                    <?php wp_nonce_field( 'landing_export' ); ?>
+                    <?php wp_nonce_field( 'landing_export', '_wpnonce_export' ); ?>
                     <input type="hidden" name="landing_action" value="export">
                     <p><button type="submit" class="button button-primary"><?php esc_html_e( 'Download JSON', 'landing' ); ?></button></p>
                 </form>
@@ -388,7 +381,7 @@ function landing_export_import_page() {
                 <h2><?php esc_html_e( 'Import Settings', 'landing' ); ?></h2>
                 <p><?php esc_html_e( 'Upload a previously exported JSON file. Images will be downloaded to the media library automatically.', 'landing' ); ?></p>
                 <form method="post" enctype="multipart/form-data">
-                    <?php wp_nonce_field( 'landing_import' ); ?>
+                    <?php wp_nonce_field( 'landing_import', '_wpnonce_import' ); ?>
                     <input type="hidden" name="landing_action" value="import">
                     <p><input type="file" name="landing_import_file" accept=".json"></p>
                     <p><button type="submit" class="button button-primary"><?php esc_html_e( 'Import JSON', 'landing' ); ?></button></p>
