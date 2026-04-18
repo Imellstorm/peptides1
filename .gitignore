@@ -7,9 +7,8 @@ upgrade/
 # Cache files
 cache/
 
-# WordPress default/bundled plugins
-plugins/akismet/
-plugins/hello.php
+# All plugins
+plugins/
 
 # WordPress default/bundled themes
 themes/twenty*/
@@ -39,9 +38,6 @@ package-lock.json
 
 # Composer
 vendor/
-
-# Advanced Custom Fields Pro license
-plugins/advanced-custom-fields-pro/.license
 
 # Object cache drop-ins
 object-cache.php
