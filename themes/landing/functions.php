@@ -42,3 +42,338 @@ function landing_buy_now_redirect( $url ) {
     return $url;
 }
 add_filter( 'woocommerce_add_to_cart_redirect', 'landing_buy_now_redirect' );
+
+/**
+ * Customizer — Landing Page settings
+ */
+function landing_customize_register( $wp_customize ) {
+
+    // Panel
+    $wp_customize->add_panel( 'landing_panel', array(
+        'title'    => __( 'Landing Page', 'landing' ),
+        'priority' => 30,
+    ) );
+
+    // === Hero Section ===
+    $wp_customize->add_section( 'landing_hero', array(
+        'title' => __( 'Hero Section', 'landing' ),
+        'panel' => 'landing_panel',
+    ) );
+
+    $wp_customize->add_setting( 'landing_hero_image', array(
+        'type'              => 'option',
+        'sanitize_callback' => 'absint',
+    ) );
+    $wp_customize->add_control( new WP_Customize_Media_Control( $wp_customize, 'landing_hero_image', array(
+        'label'     => __( 'Hero Background Image', 'landing' ),
+        'section'   => 'landing_hero',
+        'mime_type' => 'image',
+    ) ) );
+
+    $wp_customize->add_setting( 'landing_hero_title', array(
+        'type'              => 'option',
+        'default'           => 'Lorem Ipsum Dolor Sit Amet Consectetur',
+        'sanitize_callback' => 'sanitize_text_field',
+    ) );
+    $wp_customize->add_control( 'landing_hero_title', array(
+        'label'   => __( 'Hero Title (H1)', 'landing' ),
+        'section' => 'landing_hero',
+        'type'    => 'text',
+    ) );
+
+    $wp_customize->add_setting( 'landing_hero_subtitle', array(
+        'type'              => 'option',
+        'default'           => 'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.',
+        'sanitize_callback' => 'sanitize_text_field',
+    ) );
+    $wp_customize->add_control( 'landing_hero_subtitle', array(
+        'label'   => __( 'Hero Subtitle (H3)', 'landing' ),
+        'section' => 'landing_hero',
+        'type'    => 'textarea',
+    ) );
+
+    // === About Section ===
+    $wp_customize->add_section( 'landing_about', array(
+        'title' => __( 'About Section', 'landing' ),
+        'panel' => 'landing_panel',
+    ) );
+
+    $wp_customize->add_setting( 'landing_about_image', array(
+        'type'              => 'option',
+        'sanitize_callback' => 'absint',
+    ) );
+    $wp_customize->add_control( new WP_Customize_Media_Control( $wp_customize, 'landing_about_image', array(
+        'label'     => __( 'About Image', 'landing' ),
+        'section'   => 'landing_about',
+        'mime_type' => 'image',
+    ) ) );
+
+    $wp_customize->add_setting( 'landing_about_title', array(
+        'type'              => 'option',
+        'default'           => 'Lorem Ipsum Dolor Sit Amet',
+        'sanitize_callback' => 'sanitize_text_field',
+    ) );
+    $wp_customize->add_control( 'landing_about_title', array(
+        'label'   => __( 'About Title (H2)', 'landing' ),
+        'section' => 'landing_about',
+        'type'    => 'text',
+    ) );
+
+    for ( $i = 1; $i <= 5; $i++ ) {
+        $wp_customize->add_setting( "landing_about_point_{$i}_title", array(
+            'type'              => 'option',
+            'default'           => '',
+            'sanitize_callback' => 'sanitize_text_field',
+        ) );
+        $wp_customize->add_control( "landing_about_point_{$i}_title", array(
+            'label'   => sprintf( __( 'Point %d — Title', 'landing' ), $i ),
+            'section' => 'landing_about',
+            'type'    => 'text',
+        ) );
+
+        $wp_customize->add_setting( "landing_about_point_{$i}_text", array(
+            'type'              => 'option',
+            'default'           => '',
+            'sanitize_callback' => 'sanitize_text_field',
+        ) );
+        $wp_customize->add_control( "landing_about_point_{$i}_text", array(
+            'label'   => sprintf( __( 'Point %d — Description', 'landing' ), $i ),
+            'section' => 'landing_about',
+            'type'    => 'textarea',
+        ) );
+    }
+
+    // === Products Section ===
+    $wp_customize->add_section( 'landing_products', array(
+        'title' => __( 'Products Section', 'landing' ),
+        'panel' => 'landing_panel',
+    ) );
+
+    $wp_customize->add_setting( 'landing_products_title', array(
+        'type'              => 'option',
+        'default'           => 'Our Products',
+        'sanitize_callback' => 'sanitize_text_field',
+    ) );
+    $wp_customize->add_control( 'landing_products_title', array(
+        'label'   => __( 'Products Section Title', 'landing' ),
+        'section' => 'landing_products',
+        'type'    => 'text',
+    ) );
+
+    $wp_customize->add_setting( 'landing_products_count', array(
+        'type'              => 'option',
+        'default'           => 5,
+        'sanitize_callback' => 'absint',
+    ) );
+    $wp_customize->add_control( 'landing_products_count', array(
+        'label'   => __( 'Number of Products', 'landing' ),
+        'section' => 'landing_products',
+        'type'    => 'number',
+        'input_attrs' => array( 'min' => 1, 'max' => 20 ),
+    ) );
+
+    // === FAQ Section ===
+    $wp_customize->add_section( 'landing_faq', array(
+        'title' => __( 'FAQ Section', 'landing' ),
+        'panel' => 'landing_panel',
+    ) );
+
+    for ( $i = 1; $i <= 5; $i++ ) {
+        $wp_customize->add_setting( "landing_faq_{$i}_question", array(
+            'type'              => 'option',
+            'default'           => '',
+            'sanitize_callback' => 'sanitize_text_field',
+        ) );
+        $wp_customize->add_control( "landing_faq_{$i}_question", array(
+            'label'   => sprintf( __( 'FAQ %d — Question', 'landing' ), $i ),
+            'section' => 'landing_faq',
+            'type'    => 'text',
+        ) );
+
+        $wp_customize->add_setting( "landing_faq_{$i}_answer", array(
+            'type'              => 'option',
+            'default'           => '',
+            'sanitize_callback' => 'wp_kses_post',
+        ) );
+        $wp_customize->add_control( "landing_faq_{$i}_answer", array(
+            'label'   => sprintf( __( 'FAQ %d — Answer', 'landing' ), $i ),
+            'section' => 'landing_faq',
+            'type'    => 'textarea',
+        ) );
+    }
+}
+add_action( 'customize_register', 'landing_customize_register' );
+
+/**
+ * Export/Import — admin page for Landing Page settings
+ */
+function landing_export_import_menu() {
+    add_theme_page(
+        __( 'Landing Export/Import', 'landing' ),
+        __( 'Export/Import', 'landing' ),
+        'manage_options',
+        'landing-export-import',
+        'landing_export_import_page'
+    );
+}
+add_action( 'admin_menu', 'landing_export_import_menu' );
+
+function landing_get_option_keys() {
+    $keys = array(
+        'landing_hero_image',
+        'landing_hero_title',
+        'landing_hero_subtitle',
+        'landing_about_image',
+        'landing_about_title',
+        'landing_products_title',
+        'landing_products_count',
+    );
+    for ( $i = 1; $i <= 5; $i++ ) {
+        $keys[] = "landing_about_point_{$i}_title";
+        $keys[] = "landing_about_point_{$i}_text";
+        $keys[] = "landing_faq_{$i}_question";
+        $keys[] = "landing_faq_{$i}_answer";
+    }
+    return $keys;
+}
+
+function landing_handle_export() {
+    if ( ! current_user_can( 'manage_options' ) ) {
+        return;
+    }
+    check_admin_referer( 'landing_export' );
+
+    $keys = landing_get_option_keys();
+    $data = array();
+
+    foreach ( $keys as $key ) {
+        $val = get_option( $key, '' );
+        // For image fields, export the URL instead of attachment ID
+        if ( in_array( $key, array( 'landing_hero_image', 'landing_about_image' ), true ) && $val ) {
+            $data[ $key ] = array(
+                'id'  => (int) $val,
+                'url' => wp_get_attachment_url( (int) $val ) ?: '',
+            );
+        } else {
+            $data[ $key ] = $val;
+        }
+    }
+
+    header( 'Content-Type: application/json' );
+    header( 'Content-Disposition: attachment; filename="landing-settings-' . date( 'Y-m-d' ) . '.json"' );
+    echo wp_json_encode( $data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE );
+    exit;
+}
+
+function landing_handle_import() {
+    if ( ! current_user_can( 'manage_options' ) ) {
+        return 'Permission denied.';
+    }
+    check_admin_referer( 'landing_import' );
+
+    if ( empty( $_FILES['landing_import_file']['tmp_name'] ) ) {
+        return 'No file uploaded.';
+    }
+
+    $json = file_get_contents( $_FILES['landing_import_file']['tmp_name'] );
+    $data = json_decode( $json, true );
+
+    if ( ! is_array( $data ) ) {
+        return 'Invalid JSON file.';
+    }
+
+    $keys    = landing_get_option_keys();
+    $updated = 0;
+
+    foreach ( $keys as $key ) {
+        if ( ! array_key_exists( $key, $data ) ) {
+            continue;
+        }
+
+        $val = $data[ $key ];
+
+        // Image fields — try to find by URL or download
+        if ( in_array( $key, array( 'landing_hero_image', 'landing_about_image' ), true ) && is_array( $val ) ) {
+            $url = $val['url'] ?? '';
+            if ( $url ) {
+                // Check if attachment already exists by URL
+                $existing_id = attachment_url_to_postid( $url );
+                if ( $existing_id ) {
+                    update_option( $key, $existing_id );
+                } else {
+                    // Try to sideload the image
+                    require_once ABSPATH . 'wp-admin/includes/media.php';
+                    require_once ABSPATH . 'wp-admin/includes/file.php';
+                    require_once ABSPATH . 'wp-admin/includes/image.php';
+                    $tmp = download_url( $url );
+                    if ( ! is_wp_error( $tmp ) ) {
+                        $file_array = array(
+                            'name'     => basename( wp_parse_url( $url, PHP_URL_PATH ) ),
+                            'tmp_name' => $tmp,
+                        );
+                        $new_id = media_handle_sideload( $file_array, 0 );
+                        if ( ! is_wp_error( $new_id ) ) {
+                            update_option( $key, $new_id );
+                        }
+                    }
+                }
+            } else {
+                update_option( $key, '' );
+            }
+        } else {
+            update_option( $key, $val );
+        }
+        $updated++;
+    }
+
+    return sprintf( 'Imported %d settings successfully.', $updated );
+}
+
+function landing_export_import_page() {
+    // Handle export
+    if ( isset( $_POST['landing_action'] ) && $_POST['landing_action'] === 'export' ) {
+        landing_handle_export();
+    }
+
+    // Handle import
+    $notice = '';
+    if ( isset( $_POST['landing_action'] ) && $_POST['landing_action'] === 'import' ) {
+        $notice = landing_handle_import();
+    }
+    ?>
+    <div class="wrap">
+        <h1><?php esc_html_e( 'Landing Page — Export / Import', 'landing' ); ?></h1>
+
+        <?php if ( $notice ) : ?>
+            <div class="notice notice-success is-dismissible"><p><?php echo esc_html( $notice ); ?></p></div>
+        <?php endif; ?>
+
+        <div style="display:flex;gap:40px;margin-top:20px;">
+
+            <!-- Export -->
+            <div style="flex:1;background:#fff;padding:24px;border:1px solid #ccd0d4;border-radius:4px;">
+                <h2><?php esc_html_e( 'Export Settings', 'landing' ); ?></h2>
+                <p><?php esc_html_e( 'Download all Landing Page settings as a JSON file. Images are exported as URLs.', 'landing' ); ?></p>
+                <form method="post">
+                    <?php wp_nonce_field( 'landing_export' ); ?>
+                    <input type="hidden" name="landing_action" value="export">
+                    <p><button type="submit" class="button button-primary"><?php esc_html_e( 'Download JSON', 'landing' ); ?></button></p>
+                </form>
+            </div>
+
+            <!-- Import -->
+            <div style="flex:1;background:#fff;padding:24px;border:1px solid #ccd0d4;border-radius:4px;">
+                <h2><?php esc_html_e( 'Import Settings', 'landing' ); ?></h2>
+                <p><?php esc_html_e( 'Upload a previously exported JSON file. Images will be downloaded to the media library automatically.', 'landing' ); ?></p>
+                <form method="post" enctype="multipart/form-data">
+                    <?php wp_nonce_field( 'landing_import' ); ?>
+                    <input type="hidden" name="landing_action" value="import">
+                    <p><input type="file" name="landing_import_file" accept=".json"></p>
+                    <p><button type="submit" class="button button-primary"><?php esc_html_e( 'Import JSON', 'landing' ); ?></button></p>
+                </form>
+            </div>
+
+        </div>
+    </div>
+    <?php
+}
