@@ -1,0 +1,54 @@
+# Uploads directory (media files are not version controlled)
+uploads/
+
+# Upgrade directory
+upgrade/
+
+# Cache files
+cache/
+
+# WordPress default/bundled plugins
+plugins/akismet/
+plugins/hello.php
+
+# WordPress default/bundled themes
+themes/twenty*/
+
+# WooCommerce generated files
+woocommerce_uploads/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+debug.log
+
+# Node modules (if any theme/plugin uses npm)
+node_modules/
+package-lock.json
+
+# Composer
+vendor/
+
+# Advanced Custom Fields Pro license
+plugins/advanced-custom-fields-pro/.license
+
+# Object cache drop-ins
+object-cache.php
+advanced-cache.php
+db.php
+
+# Backup files
+*.bak
+*.backup
+*.sql
