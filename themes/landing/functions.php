@@ -267,23 +267,24 @@ function landing_handle_export() {
 
 function landing_handle_import() {
     if ( ! current_user_can( 'manage_options' ) ) {
-        return 'Permission denied.';
+        return array( 'error', 'Permission denied.' );
     }
     check_admin_referer( 'landing_import' );
 
     if ( empty( $_FILES['landing_import_file']['tmp_name'] ) ) {
-        return 'No file uploaded.';
+        return array( 'error', 'No file uploaded.' );
     }
 
     $json = file_get_contents( $_FILES['landing_import_file']['tmp_name'] );
     $data = json_decode( $json, true );
 
     if ( ! is_array( $data ) ) {
-        return 'Invalid JSON file.';
+        return array( 'error', 'Invalid JSON file.' );
     }
 
-    $keys    = landing_get_option_keys();
-    $updated = 0;
+    $keys         = landing_get_option_keys();
+    $updated      = 0;
+    $img_skipped  = array();
 
     foreach ( $keys as $key ) {
         if ( ! array_key_exists( $key, $data ) ) {
@@ -292,41 +293,59 @@ function landing_handle_import() {
 
         $val = $data[ $key ];
 
-        // Image fields — try to find by URL or download
-        if ( in_array( $key, array( 'landing_hero_image', 'landing_about_image' ), true ) && is_array( $val ) ) {
-            $url = $val['url'] ?? '';
-            if ( $url ) {
+        // Image fields
+        if ( in_array( $key, array( 'landing_hero_image', 'landing_about_image' ), true ) ) {
+            if ( is_array( $val ) ) {
+                $url = $val['url'] ?? '';
+                if ( ! $url ) {
+                    update_option( $key, '' );
+                    $updated++;
+                    continue;
+                }
+
                 // Check if attachment already exists by URL
                 $existing_id = attachment_url_to_postid( $url );
                 if ( $existing_id ) {
                     update_option( $key, $existing_id );
-                } else {
-                    // Try to sideload the image
-                    require_once ABSPATH . 'wp-admin/includes/media.php';
-                    require_once ABSPATH . 'wp-admin/includes/file.php';
-                    require_once ABSPATH . 'wp-admin/includes/image.php';
-                    $tmp = download_url( $url );
-                    if ( ! is_wp_error( $tmp ) ) {
-                        $file_array = array(
-                            'name'     => basename( wp_parse_url( $url, PHP_URL_PATH ) ),
-                            'tmp_name' => $tmp,
-                        );
-                        $new_id = media_handle_sideload( $file_array, 0 );
-                        if ( ! is_wp_error( $new_id ) ) {
-                            update_option( $key, $new_id );
-                        }
-                    }
+                    $updated++;
+                    continue;
                 }
-            } else {
-                update_option( $key, '' );
+
+                // Try to sideload
+                require_once ABSPATH . 'wp-admin/includes/media.php';
+                require_once ABSPATH . 'wp-admin/includes/file.php';
+                require_once ABSPATH . 'wp-admin/includes/image.php';
+                $tmp = download_url( $url, 10 );
+                if ( is_wp_error( $tmp ) ) {
+                    $img_skipped[] = $key . ' (' . $tmp->get_error_message() . ')';
+                    continue;
+                }
+                $file_array = array(
+                    'name'     => basename( wp_parse_url( $url, PHP_URL_PATH ) ),
+                    'tmp_name' => $tmp,
+                );
+                $new_id = media_handle_sideload( $file_array, 0 );
+                if ( is_wp_error( $new_id ) ) {
+                    $img_skipped[] = $key . ' (' . $new_id->get_error_message() . ')';
+                    continue;
+                }
+                update_option( $key, $new_id );
+                $updated++;
             }
-        } else {
-            update_option( $key, $val );
+            continue;
         }
+
+        // Text fields
+        update_option( $key, $val );
         $updated++;
     }
 
-    return sprintf( 'Imported %d settings successfully.', $updated );
+    $msg = sprintf( 'Imported %d settings successfully.', $updated );
+    if ( ! empty( $img_skipped ) ) {
+        $msg .= ' Skipped images: ' . implode( ', ', $img_skipped ) . ' — upload them manually via Customize.';
+    }
+
+    return array( 'success', $msg );
 }
 
 function landing_export_import_page() {
@@ -336,16 +355,19 @@ function landing_export_import_page() {
     }
 
     // Handle import
-    $notice = '';
+    $notice      = '';
+    $notice_type = 'success';
     if ( isset( $_POST['landing_action'] ) && $_POST['landing_action'] === 'import' ) {
-        $notice = landing_handle_import();
+        $result      = landing_handle_import();
+        $notice_type = $result[0] === 'error' ? 'error' : 'success';
+        $notice      = $result[1];
     }
     ?>
     <div class="wrap">
         <h1><?php esc_html_e( 'Landing Page — Export / Import', 'landing' ); ?></h1>
 
         <?php if ( $notice ) : ?>
-            <div class="notice notice-success is-dismissible"><p><?php echo esc_html( $notice ); ?></p></div>
+            <div class="notice notice-<?php echo esc_attr( $notice_type ); ?> is-dismissible"><p><?php echo esc_html( $notice ); ?></p></div>
         <?php endif; ?>
 
         <div style="display:flex;gap:40px;margin-top:20px;">
