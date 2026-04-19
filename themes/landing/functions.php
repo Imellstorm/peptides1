@@ -218,6 +218,26 @@ function landing_export_import_menu() {
 }
 add_action( 'admin_menu', 'landing_export_import_menu' );
 
+/**
+ * Handle export early, before any HTML output
+ */
+function landing_maybe_export() {
+    if ( ! is_admin() || ! current_user_can( 'manage_options' ) ) {
+        return;
+    }
+    if ( empty( $_GET['page'] ) || $_GET['page'] !== 'landing-export-import' ) {
+        return;
+    }
+    if ( empty( $_POST['landing_action'] ) || $_POST['landing_action'] !== 'export' ) {
+        return;
+    }
+    if ( ! wp_verify_nonce( $_POST['_wpnonce_export'] ?? '', 'landing_export' ) ) {
+        return;
+    }
+    landing_handle_export(); // calls exit
+}
+add_action( 'admin_init', 'landing_maybe_export' );
+
 function landing_get_option_keys() {
     $keys = array(
         'landing_hero_image',
@@ -345,15 +365,11 @@ function landing_export_import_page() {
     $notice      = '';
     $notice_type = 'success';
 
-    if ( isset( $_POST['landing_action'] ) ) {
-        if ( $_POST['landing_action'] === 'export' && wp_verify_nonce( $_POST['_wpnonce_export'], 'landing_export' ) ) {
-            landing_handle_export();
-        }
-        if ( $_POST['landing_action'] === 'import' && wp_verify_nonce( $_POST['_wpnonce_import'], 'landing_import' ) ) {
-            $result      = landing_handle_import();
-            $notice_type = $result[0] === 'error' ? 'error' : 'success';
-            $notice      = $result[1];
-        }
+    if ( isset( $_POST['landing_action'] ) && $_POST['landing_action'] === 'import'
+         && wp_verify_nonce( $_POST['_wpnonce_import'] ?? '', 'landing_import' ) ) {
+        $result      = landing_handle_import();
+        $notice_type = $result[0] === 'error' ? 'error' : 'success';
+        $notice      = $result[1];
     }
     ?>
     <div class="wrap">
