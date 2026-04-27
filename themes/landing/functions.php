@@ -27,10 +27,32 @@ add_action( 'after_setup_theme', 'landing_setup' );
  * Enqueue styles and scripts
  */
 function landing_scripts() {
-    wp_enqueue_style( 'landing-style', get_stylesheet_uri(), array(), '1.0.0' );
+    wp_enqueue_style( 'landing-style', get_stylesheet_uri(), array(), '1.0.1' );
     wp_enqueue_script( 'landing-faq', get_template_directory_uri() . '/assets/js/faq.js', array(), '1.0.0', true );
+
+    if ( class_exists( 'WooCommerce' ) && is_front_page() ) {
+        wp_enqueue_script( 'wc-add-to-cart' );
+        wp_enqueue_script( 'wc-cart-fragments' );
+    }
 }
 add_action( 'wp_enqueue_scripts', 'landing_scripts' );
+
+/**
+ * Force WooCommerce AJAX add-to-cart on regardless of admin setting
+ */
+add_filter( 'pre_option_woocommerce_enable_ajax_add_to_cart', function () { return 'yes'; } );
+
+/**
+ * Refresh the header cart count after AJAX add-to-cart
+ */
+function landing_cart_count_fragment( $fragments ) {
+    ob_start(); ?>
+    <span class="cart-count"><?php echo esc_html( WC()->cart->get_cart_contents_count() ); ?></span>
+    <?php
+    $fragments['span.cart-count'] = ob_get_clean();
+    return $fragments;
+}
+add_filter( 'woocommerce_add_to_cart_fragments', 'landing_cart_count_fragment' );
 
 /**
  * Buy Now redirect — add to cart then go straight to checkout

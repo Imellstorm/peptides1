@@ -66,12 +66,15 @@ $faq_defaults = array(
                 </div>
                 <div class="product-info">
                     <h3 class="product-name"><?php echo esc_html( $product->get_name() ); ?></h3>
-                    <p class="product-desc"><?php echo esc_html( wp_trim_words( $product->get_description(), 15 ) ); ?></p>
+                    <div class="product-desc"><?php echo wp_kses_post( wpautop( $product->get_description() ) ); ?></div>
                     <div class="product-price"><?php echo $product->get_price_html(); ?></div>
                     <div class="product-actions">
                         <a href="<?php echo esc_url( $product->add_to_cart_url() ); ?>"
-                           class="btn btn-add-cart"
-                           data-product_id="<?php echo esc_attr( $product->get_id() ); ?>">
+                           class="btn btn-add-cart add_to_cart_button ajax_add_to_cart"
+                           data-product_id="<?php echo esc_attr( $product->get_id() ); ?>"
+                           data-product_sku="<?php echo esc_attr( $product->get_sku() ); ?>"
+                           data-quantity="1"
+                           rel="nofollow">
                             Add to Cart
                         </a>
                         <a href="<?php echo esc_url( $product->add_to_cart_url() ); ?>&buy_now=1"

@@ -279,6 +279,14 @@ a:hover {
     line-height: 1.6;
 }
 
+.product-desc p {
+    margin: 0 0 10px;
+}
+
+.product-desc p:last-child {
+    margin-bottom: 0;
+}
+
 .product-price {
     font-size: 1.3rem;
     font-weight: 700;
@@ -317,6 +325,40 @@ a:hover {
     background: var(--color-primary);
     color: #fff;
     border-color: var(--color-primary);
+}
+
+.btn-add-cart.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.btn-add-cart.loading::after {
+    content: "";
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-left: 8px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: landing-spin 0.7s linear infinite;
+    vertical-align: middle;
+}
+
+.btn-add-cart.added {
+    background: #16a34a;
+    color: #fff;
+    border-color: #16a34a;
+}
+
+.product-card .added_to_cart,
+.product-actions .added_to_cart,
+.product-actions a.wc-forward {
+    display: none !important;
+}
+
+@keyframes landing-spin {
+    to { transform: rotate(360deg); }
 }
 
 .btn-buy-now {
